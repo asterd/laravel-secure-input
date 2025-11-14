@@ -1,0 +1,29 @@
+{
+  "name": "asterd/laravel-secure-input",
+  "description": "Unified security middleware for Laravel: XSS, SQL injection, and RCE hardening with configurable levels.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dario D'Urzo",
+      "email": "dario.durzo@brunellocucinelli.it"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "illuminate/support": "^10.0|^11.0|^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SecureInput\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "SecureInput\\SecureInputServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "stable"
+}

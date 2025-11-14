@@ -43,7 +43,7 @@ return [
     ],
 
     'exclude_methods' => [
-        'GET',
+        // 'GET' is now processed for security
     ],
 
     /*
@@ -71,6 +71,25 @@ return [
     */
 
     'log_enabled' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | File Upload Security
+    |--------------------------------------------------------------------------
+    |
+    | Settings for file upload security checks
+    |
+    */
+
+    'file_upload_security' => [
+        'enabled' => true,
+        'dangerous_extensions' => [
+            'php', 'php3', 'php4', 'php5', 'phtml', 'phar',
+            'exe', 'bat', 'cmd', 'com', 'scr', 'js', 'vbs',
+            'jar', 'asp', 'aspx', 'jsp', 'jspx', 'swf',
+            'htaccess', 'htpasswd', 'cgi', 'pl', 'py', 'rb'
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------

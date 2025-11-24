@@ -24,7 +24,12 @@ class SecureInput
         '/\bascii\b/i',
         '/\bord\b/i',
         '/\bchar\b/i',
-        '/--/',
+        '/\bcast\b/i',
+        '/\bconvert\b/i',
+        '/\bnvarchar\b/i',
+        '/\bvarchar\b/i',
+        '/--\s+/',
+        '/--$/',
         '/\/\*/',
         '/\*\//',
         '/;(?=\s*|$)/',
@@ -32,6 +37,18 @@ class SecureInput
         '/\bdelay\b/i',
         '/\bsleep\b/i',
         '/\bbenchmark\b/i',
+        // Numeric SQL injection patterns
+        '/\b(\d+)\s*(?:or|and)\s*(\d+)\s*=\s*(\d+)/i',
+        // Hexadecimal encoding
+        '/0x[0-9a-f]+/i',
+        // SQL functions commonly used in injections
+        '/\b(database|table_schema|column_name)\b/i',
+        // Boolean-based SQL injection
+        '/\s+(or|and)\s+\d+=\d+/i',
+        // Classic tautology patterns
+        '/\b(or|and)\s+\d+\s*=\s*\d+/i',
+        // Comment injection
+        '/\s*--\s*.*/i',
     ];
 
     /**
@@ -199,9 +216,33 @@ class SecureInput
 
     private function detectThreat(string $value, string $mode, array $cfg): bool
     {
-        // Base SQL + RCE checks
-        foreach (array_merge($this->sqlPatterns, $this->rcePatterns) as $pattern) {
-            if (preg_match($pattern, $value)) {
+        // Decode URL encoded characters for better pattern matching
+        $decodedValue = urldecode($value);
+        
+        // Also check the original value
+        $valuesToCheck = [$value, $decodedValue];
+        
+        foreach ($valuesToCheck as $val) {
+            // Base SQL + RCE checks
+            foreach (array_merge($this->sqlPatterns, $this->rcePatterns) as $pattern) {
+                if (preg_match($pattern, $val)) {
+                    return true;
+                }
+            }
+
+            // Additional SQL injection patterns
+            // Check for classic SQL injection patterns
+            if (preg_match('/\b(union|select|insert|update|delete|drop|truncate|concat|substring|ascii|ord|char|cast|convert)\b.*(from|into|where|having|group\s+by|order\s+by)/i', $val)) {
+                return true;
+            }
+            
+            // Check for stacked queries
+            if (preg_match('/;\s*(select|insert|update|delete|drop|create|alter|exec|execute)\b/i', $val)) {
+                return true;
+            }
+            
+            // Check for SQL comment patterns that bypass filters
+            if (preg_match('/\/\*.*?\*\//', $val) || preg_match('/--\s+/', $val)) {
                 return true;
             }
         }
